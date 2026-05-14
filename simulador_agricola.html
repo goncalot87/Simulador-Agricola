@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Simulador Hídrico Agrícola — GO 2025/2026 </title>
+<title>Simulador Hídrico Agrícola — GO 2025</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -245,7 +245,7 @@ input[type=range]::-webkit-slider-thumb {
 <body>
 
 <header class="app-header">
-  <div class="eyebrow">Gestão de Operações · 2025/2026</div>
+  <div class="eyebrow">Gestão de Operações · 2025</div>
   <div class="app-title">Quanto custa <span>não planear</span> a água?</div>
   <div class="app-sub">Configura a exploração e vê o impacto em tempo real.</div>
 </header>
@@ -437,17 +437,23 @@ function render() {
   const r  = REGAS.find(x => x.id === state.regaId);
   const area = state.area;
 
-  const consumoAtual = area * c.prodDef * c.lkg / 1e6;
-  const consumoPrec  = area * c.prodDef * c.precLkg / 1e6;
+  // Consumo real captado = água necessária à planta / eficiência do sistema atual
+  // c.lkg é a água que a planta precisa (referência gota-a-gota ~90%)
+  // Para sistemas menos eficientes, é necessário captar mais para entregar o mesmo
+  const EFIC_PREC = 0.90;
+  const eficAtual  = r.efic / 100;
+  const aguaPlanta = area * c.prodDef * c.lkg / 1e6;           // água que chega à planta
+  const consumoAtual = aguaPlanta / eficAtual;                   // água captada (real)
+  const consumoPrec  = aguaPlanta / EFIC_PREC;                   // água captada c/ precisão
   const poupanca     = consumoAtual - consumoPrec;
   const poupPct      = Math.round(poupanca / consumoAtual * 100);
   const custoInefic  = poupanca * 1e6 * 0.04;
   const corteApa     = consumoAtual * sc.corte;
   const consumoSec   = consumoAtual - corteApa;
-  const prodPerd     = corteApa > 0 ? (corteApa / (c.lkg / 1e6)) / c.prodDef : 0;
+  const prodPerd     = corteApa > 0 ? (corteApa * eficAtual / (c.lkg / 1e6)) / c.prodDef : 0;
   const percProd     = Math.round(prodPerd / (area * c.prodDef) * 100);
   const buffer       = Math.min(poupanca, corteApa);
-  const prodRecup    = buffer > 0 ? (buffer / (c.lkg / 1e6)) / c.prodDef : 0;
+  const prodRecup    = buffer > 0 ? (buffer * EFIC_PREC / (c.lkg / 1e6)) / c.prodDef : 0;
 
   document.getElementById('r-consumo').textContent  = fmt(consumoAtual) + ' hm³';
   document.getElementById('r-poupanca').textContent  = fmt(poupanca) + ' hm³';
