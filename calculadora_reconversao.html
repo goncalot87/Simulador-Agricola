@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Calculadora de Reconversão de Rega — GO 2025/2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #F2EFE9;
+  --surface: #FDFCF9;
+  --ink:     #1C1A16;
+  --ink2:    #5C5850;
+  --ink3:    #9C9890;
+  --green:   #2A6B4A;
+  --green-l: #E0F2E9;
+  --green-d: #1A4A32;
+  --red:     #C84B2F;
+  --red-l:   #FDE8E5;
+  --amber:   #B87420;
+  --amber-l: #FDF0DC;
+  --line:    rgba(28,26,22,0.1);
+  --r:       12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  padding-bottom: 3rem;
+}
+
+/* HEADER */
+.app-header { background: var(--ink); padding: 1.25rem 1.1rem 1.1rem; }
+.eyebrow { font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: .35rem; }
+.app-title { font-family: 'Lora', serif; font-size: 1.15rem; font-weight: 600; color: #fff; line-height: 1.25; }
+.app-title span { color: #7ACC94; font-style: italic; }
+.app-sub { font-size: 11px; color: rgba(255,255,255,0.38); margin-top: .3rem; line-height: 1.5; }
+
+/* SECTION */
+.section { margin: 1rem .9rem 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.section-head { padding: .7rem 1rem; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: .5rem; }
+.section-num { width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 10px; font-weight: 500; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.section-title { font-size: 12px; font-weight: 500; color: var(--ink); }
+.section-body { padding: .9rem 1rem; }
+
+/* CONTROLS */
+.ctrl-row { margin-bottom: 1rem; }
+.ctrl-row:last-child { margin-bottom: 0; }
+.ctrl-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .35rem; }
+.ctrl-label { font-size: 12px; font-weight: 500; color: var(--ink); }
+.ctrl-val { font-family: 'Lora', serif; font-size: 1.05rem; color: var(--green); }
+.ctrl-hint { font-size: 10px; color: var(--ink3); margin-top: 3px; }
+
+input[type=range] {
+  width: 100%; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px; background: transparent; outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, var(--green) var(--pct,0%), #D5D0C8 var(--pct,0%));
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--green); margin-top: -9px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+}
+
+/* TOGGLE BUTTONS */
+.toggle-row { display: flex; gap: 6px; }
+.t-btn {
+  flex: 1; background: var(--bg); border: 1.5px solid var(--line);
+  border-radius: 8px; padding: .55rem .4rem;
+  text-align: center; cursor: pointer; transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.t-btn:active { transform: scale(.97); }
+.t-btn .tn { font-size: 12px; color: var(--ink); display: block; }
+.t-btn .ts { font-size: 10px; color: var(--ink3); display: block; margin-top: 1px; }
+.t-btn.active { background: var(--green); border-color: var(--green); }
+.t-btn.active .tn, .t-btn.active .ts { color: #fff; }
+.t-btn.active .ts { opacity: .7; }
+
+/* HERO */
+.hero { margin: 1rem .9rem 0; background: var(--ink); border-radius: var(--r); padding: 1.1rem; color: #fff; }
+.hero-label { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,0.3); margin-bottom: .8rem; }
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.h-val { font-family: 'Lora', serif; font-size: 1.6rem; line-height: 1; margin-bottom: .2rem; }
+.h-val.pos  { color: #7ACC94; }
+.h-val.neg  { color: #F09595; }
+.h-val.warn { color: #FAC775; }
+.h-desc { font-size: 10px; color: rgba(255,255,255,0.38); line-height: 1.4; }
+
+/* RESULT CARDS */
+.result-card { margin: 1rem .9rem 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 1rem; }
+.rc-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin-bottom: .75rem; }
+
+/* METRIC ROWS */
+.metric-list { display: flex; flex-direction: column; gap: .6rem; }
+.metric-row { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: .6rem; border-bottom: 1px solid var(--line); font-size: 12px; }
+.metric-row:last-child { border-bottom: none; padding-bottom: 0; }
+.metric-row .mk { color: var(--ink2); }
+.metric-row .mv { font-weight: 500; color: var(--ink); }
+.metric-row .mv.pos { color: var(--green); }
+.metric-row .mv.neg { color: var(--red); }
+.metric-row .mv.warn { color: var(--amber); }
+
+/* PAYBACK TIMELINE */
+.timeline { position: relative; margin-top: .5rem; }
+.tl-track { background: var(--bg); border-radius: 3px; height: 10px; overflow: hidden; margin-bottom: 4px; }
+.tl-fill { height: 100%; border-radius: 3px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+.tl-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--ink3); }
+
+/* CHART BARS (acumulado) */
+.chart-wrap { overflow-x: auto; padding-bottom: .5rem; }
+.chart-inner { display: flex; align-items: flex-end; gap: 4px; min-width: 320px; height: 120px; padding-top: 10px; }
+.chart-bar-col { display: flex; flex-direction: column; align-items: center; flex: 1; }
+.chart-bar { width: 100%; border-radius: 3px 3px 0 0; transition: height .5s ease; position: relative; min-height: 2px; }
+.chart-bar.inv { background: #F09595; }
+.chart-bar.sav { background: #7ACC94; }
+.chart-bar.zero { background: var(--line); }
+.chart-bar-label { font-size: 9px; color: var(--ink3); margin-top: 3px; }
+.chart-legend { display: flex; gap: 12px; font-size: 10px; color: var(--ink2); margin-top: .5rem; }
+.chart-legend span { display: flex; align-items: center; gap: 4px; }
+.cl-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* SECA BUFFER */
+.seca-box { border-radius: var(--r); padding: 1rem; border: 1px solid; margin: 1rem .9rem 0; }
+.seca-box.normal   { background: var(--green-l); border-color: #9FE1CB; }
+.seca-box.moderada { background: var(--amber-l); border-color: #FAC775; }
+.seca-box.severa   { background: var(--red-l);   border-color: #F7C1C1; }
+.sb-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .65rem; }
+.sb-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sb-title { font-size: 12px; font-weight: 500; }
+.sb-title.normal   { color: #1A5E35; }
+.sb-title.moderada { color: #7A4C10; }
+.sb-title.severa   { color: #A32D2D; }
+.sb-metrics { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; margin-bottom: .6rem; }
+.sb-m-val { font-family: 'Lora', serif; font-size: 1.15rem; line-height: 1; margin-bottom: 2px; }
+.sb-m-val.normal   { color: #1A5E35; }
+.sb-m-val.moderada { color: #7A4C10; }
+.sb-m-val.severa   { color: #A32D2D; }
+.sb-m-lbl { font-size: 10px; line-height: 1.35; }
+.sb-m-lbl.normal   { color: #2A7A50; }
+.sb-m-lbl.moderada { color: #8A5C20; }
+.sb-m-lbl.severa   { color: #B03030; }
+.sb-note { font-size: 11px; line-height: 1.6; padding-top: .55rem; border-top: 1px solid rgba(28,26,22,0.08); }
+.sb-note.normal   { color: #2A7A50; }
+.sb-note.moderada { color: #8A5C20; }
+.sb-note.severa   { color: #B03030; }
+
+/* SECA PILLS */
+.seca-pills { display: flex; gap: 6px; margin-bottom: .6rem; }
+.s-pill { flex: 1; border: 1.5px solid var(--line); border-radius: 8px; padding: .5rem .4rem; text-align: center; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .15s; background: var(--bg); }
+.s-pill .sp-n { font-size: 11px; color: var(--ink); display: block; }
+.s-pill .sp-f { font-size: 9px; color: var(--ink3); display: block; margin-top: 1px; }
+.s-pill.active-normal   { background: var(--green-l); border-color: var(--green); }
+.s-pill.active-normal .sp-n { color: var(--green-d); font-weight: 500; }
+.s-pill.active-moderada { background: var(--amber-l); border-color: var(--amber); }
+.s-pill.active-moderada .sp-n { color: #7A4C10; font-weight: 500; }
+.s-pill.active-severa   { background: var(--red-l); border-color: var(--red); }
+.s-pill.active-severa .sp-n { color: #A32D2D; font-weight: 500; }
+
+/* GO BOX */
+.go-box { margin: 1rem .9rem 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 1rem; }
+.go-label { font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin-bottom: .6rem; }
+.go-insight { font-family: 'Lora', serif; font-size: .97rem; font-style: italic; line-height: 1.55; color: var(--ink); margin-bottom: .5rem; }
+.go-body { font-size: 11px; color: var(--ink2); line-height: 1.65; }
+
+.source { font-size: 10px; color: var(--ink3); text-align: center; padding: 1.25rem .9rem 0; line-height: 1.55; }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="eyebrow">Gestão de Operações · 2025/2026</div>
+  <div class="app-title">Reconversão de rega — <span>quando compensa?</span></div>
+  <div class="app-sub">Modelo de investimento vs. retorno para a transição para rega de precisão.</div>
+</header>
+
+<!-- 1. Exploração -->
+<div class="section">
+  <div class="section-head"><div class="section-num">1</div><div class="section-title">Exploração a reconverter</div></div>
+  <div class="section-body">
+
+    <div class="ctrl-row">
+      <div class="ctrl-top"><span class="ctrl-label">Área a reconverter</span><span class="ctrl-val" id="v-area">100 ha</span></div>
+      <input type="range" id="s-area" min="5" max="300" step="5" value="100">
+      <div class="ctrl-hint">Média Alentejo: 62,9 ha · Apoio PAC tipicamente limitado a 150 ha/candidatura</div>
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-label" style="margin-bottom:.5rem">Sistema atual</div>
+      <div class="toggle-row" id="rega-atual"></div>
+    </div>
+
+    <div class="ctrl-row" style="margin-bottom:0">
+      <div class="ctrl-label" style="margin-bottom:.5rem">Cultura principal</div>
+      <div class="toggle-row" id="cultura-grid" style="flex-wrap:wrap;gap:6px"></div>
+      <div class="ctrl-hint" style="margin-top:5px">Afeta o consumo base e o valor da poupança hídrica</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 2. Financiamento -->
+<div class="section">
+  <div class="section-head"><div class="section-num">2</div><div class="section-title">Financiamento e pressupostos</div></div>
+  <div class="section-body">
+
+    <div class="ctrl-row">
+      <div class="ctrl-top"><span class="ctrl-label">Subsídio PAC (% do investimento)</span><span class="ctrl-val" id="v-subsidio">50%</span></div>
+      <input type="range" id="s-subsidio" min="0" max="80" step="5" value="50">
+      <div class="ctrl-hint">PAC 2023–2027: até 65% em zonas desfavorecidas · 40–50% em geral (DGADR)</div>
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-top"><span class="ctrl-label">Tarifa de água (€/m³)</span><span class="ctrl-val" id="v-tarifa">0.04</span></div>
+      <input type="range" id="s-tarifa" min="0.01" max="0.20" step="0.01" value="0.04">
+      <div class="ctrl-hint">Captações públicas APA: ~0,04 €/m³ · Furos privados: custo energia ~0,08–0,12 €/m³</div>
+    </div>
+
+    <div class="ctrl-row" style="margin-bottom:0">
+      <div class="ctrl-top"><span class="ctrl-label">Preço de energia (€/kWh)</span><span class="ctrl-val" id="v-energia">0.14</span></div>
+      <input type="range" id="s-energia" min="0.08" max="0.30" step="0.01" value="0.14">
+      <div class="ctrl-hint">Tarifa industrial média Portugal 2024: ~0,12–0,16 €/kWh (DGEG)</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Hero resultados -->
+<div class="hero">
+  <div class="hero-label">Resultados financeiros</div>
+  <div class="hero-grid">
+    <div><div class="h-val neg" id="r-invest">—</div><div class="h-desc">investimento total (€)</div></div>
+    <div><div class="h-val pos" id="r-invest-liq">—</div><div class="h-desc">investimento líquido após subsídio (€)</div></div>
+    <div><div class="h-val pos" id="r-poupanca-ano">—</div><div class="h-desc">poupança anual total (€/ano)</div></div>
+    <div><div class="h-val warn" id="r-payback">—</div><div class="h-desc">payback simples (anos)</div></div>
+  </div>
+</div>
+
+<!-- Detalhe financeiro -->
+<div class="result-card">
+  <div class="rc-label">Detalhe do modelo financeiro</div>
+  <div class="metric-list" id="metric-list"></div>
+</div>
+
+<!-- Acumulado 10 anos -->
+<div class="result-card">
+  <div class="rc-label">Poupanças acumuladas vs. investimento — 10 anos</div>
+  <div class="chart-wrap"><div class="chart-inner" id="chart-bars"></div></div>
+  <div class="chart-legend">
+    <span><div class="cl-dot" style="background:#F09595"></div>Investimento líquido</span>
+    <span><div class="cl-dot" style="background:#7ACC94"></div>Poupança acumulada</span>
+  </div>
+  <div style="font-size:10px;color:var(--ink3);margin-top:.5rem" id="chart-note"></div>
+</div>
+
+<!-- Impacto em seca -->
+<div class="result-card" style="margin-top:1rem">
+  <div class="rc-label">Impacto da reconversão em seca</div>
+  <div class="seca-pills" id="seca-pills"></div>
+</div>
+<div class="seca-box normal" id="seca-box">
+  <div class="sb-head"><div class="sb-dot" id="sb-dot"></div><div class="sb-title normal" id="sb-title"></div></div>
+  <div class="sb-metrics" id="sb-metrics"></div>
+  <div class="sb-note normal" id="sb-note"></div>
+</div>
+
+<!-- GO insight -->
+<div class="go-box">
+  <div class="go-label">Lição de Gestão de Operações</div>
+  <div class="go-insight" id="go-insight"></div>
+  <div class="go-body" id="go-body"></div>
+</div>
+
+<div class="source">
+  Custos de instalação: DGADR; EDIA; estudos de campo Alentejo 2022–2024<br>
+  Subsídios: PAC 2023–2027 · Tarifas: APA; DGEG 2024 · Frequências de seca: SNIRH 2000–2024
+</div>
+
+<script>
+// ── DADOS ────────────────────────────────────────
+const CULTURAS = [
+  { id:'tomate',   nome:'Tomate',   lkg:300,  efPlanta:40, consumoBase:0.45 },
+  { id:'olival',   nome:'Olival',   lkg:1200, efPlanta:5,  consumoBase:0.55 },
+  { id:'vinha',    nome:'Vinha',    lkg:200,  efPlanta:8,  consumoBase:0.30 },
+  { id:'milho',    nome:'Milho',    lkg:700,  efPlanta:9,  consumoBase:0.50 },
+  { id:'citrinos', nome:'Citrinos', lkg:800,  efPlanta:25, consumoBase:0.60 },
+];
+
+// Custo instalação gota-a-gota (€/ha) por sistema de origem
+const CUSTO_INSTALACAO = {
+  gravidade: 3200,  // maior obra civil
+  aspersao:  2100,  // substituição de equipamento
+};
+
+// Eficiência dos sistemas
+const EFIC = { gravidade: 0.45, aspersao: 0.65, precisao: 0.90 };
+
+// Energia de bombagem (kWh/m³ captado) — aspersão precisa mais pressão
+const ENERGIA_BOMBAGEM = { gravidade: 0.08, aspersao: 0.22, precisao: 0.18 };
+
+const SECAS = [
+  { id:'normal',   nome:'Normal',   freq:'60% meses', dot:'#3A9960', corte:0,    cls:'normal'   },
+  { id:'moderada', nome:'Seca mod.',freq:'25% meses', dot:'#E8A030', corte:0.25, cls:'moderada' },
+  { id:'severa',   nome:'Seca sev.',freq:'15% meses', dot:'#E85340', corte:0.45, cls:'severa'   },
+];
+
+const TITULOS_SECA = {
+  normal:   'Cenário normal — sem restrições de captação',
+  moderada: 'Seca moderada — corte de 25% na dotação',
+  severa:   'Seca severa — corte de 45% · APA pode restringir',
+};
+
+let state = {
+  area: 100, regaId: 'aspersao', culturaId: 'tomate',
+  subsidio: 50, tarifa: 0.04, energia: 0.14, secaId: 'normal',
+};
+
+// ── BUILD CONTROLS ────────────────────────────────
+// Rega atual
+const regaAtualEl = document.getElementById('rega-atual');
+[{id:'gravidade',nome:'Gravidade',sub:'efic. 45%'},{id:'aspersao',nome:'Aspersão',sub:'efic. 65%'}].forEach(r => {
+  const b = document.createElement('button');
+  b.className = 't-btn' + (r.id === state.regaId ? ' active' : '');
+  b.dataset.id = r.id;
+  b.innerHTML = `<span class="tn">${r.nome}</span><span class="ts">${r.sub}</span>`;
+  b.onclick = () => { state.regaId = r.id; regaAtualEl.querySelectorAll('.t-btn').forEach(x => x.classList.toggle('active', x.dataset.id === r.id)); render(); };
+  regaAtualEl.appendChild(b);
+});
+
+// Culturas
+const culturaEl = document.getElementById('cultura-grid');
+CULTURAS.forEach(c => {
+  const b = document.createElement('button');
+  b.className = 't-btn' + (c.id === state.culturaId ? ' active' : '');
+  b.style.flex = '0 0 calc(33% - 4px)';
+  b.dataset.id = c.id;
+  b.innerHTML = `<span class="tn">${c.nome}</span>`;
+  b.onclick = () => { state.culturaId = c.id; culturaEl.querySelectorAll('.t-btn').forEach(x => x.classList.toggle('active', x.dataset.id === c.id)); render(); };
+  culturaEl.appendChild(b);
+});
+
+// Seca pills
+const secaPillsEl = document.getElementById('seca-pills');
+SECAS.forEach(sc => {
+  const b = document.createElement('button');
+  b.className = 's-pill' + (sc.id === state.secaId ? ` active-${sc.id}` : '');
+  b.dataset.id = sc.id;
+  b.innerHTML = `<span class="sp-n">${sc.nome}</span><span class="sp-f">${sc.freq}</span>`;
+  b.onclick = () => { state.secaId = sc.id; secaPillsEl.querySelectorAll('.s-pill').forEach(x => { x.className = 's-pill' + (x.dataset.id === sc.id ? ` active-${sc.id}` : ''); }); renderSeca(); };
+  secaPillsEl.appendChild(b);
+});
+
+// Sliders
+function makeSlider(id, valId, suffix, decimals) {
+  const el = document.getElementById(id);
+  function upd() {
+    const v = parseFloat(el.value);
+    document.getElementById(valId).textContent = v.toFixed(decimals) + suffix;
+    const pct = ((el.value - el.min) / (el.max - el.min) * 100).toFixed(1);
+    el.style.setProperty('--pct', pct + '%');
+  }
+  el.addEventListener('input', () => { upd(); const k = id.replace('s-',''); state[k.replace('-','')] = parseFloat(el.value); render(); });
+  upd();
+}
+function initSlider(id) {
+  const el = document.getElementById(id);
+  const pct = ((el.value - el.min) / (el.max - el.min) * 100).toFixed(1);
+  el.style.setProperty('--pct', pct + '%');
+}
+
+document.getElementById('s-area').addEventListener('input', e => {
+  state.area = parseInt(e.target.value);
+  document.getElementById('v-area').textContent = state.area.toLocaleString('pt-PT') + ' ha';
+  const pct = ((e.target.value - e.target.min) / (e.target.max - e.target.min) * 100).toFixed(1);
+  e.target.style.setProperty('--pct', pct + '%');
+  render();
+});
+initSlider('s-area');
+
+document.getElementById('s-subsidio').addEventListener('input', e => {
+  state.subsidio = parseInt(e.target.value);
+  document.getElementById('v-subsidio').textContent = state.subsidio + '%';
+  const pct = ((e.target.value - e.target.min) / (e.target.max - e.target.min) * 100).toFixed(1);
+  e.target.style.setProperty('--pct', pct + '%');
+  render();
+});
+initSlider('s-subsidio');
+
+document.getElementById('s-tarifa').addEventListener('input', e => {
+  state.tarifa = parseFloat(e.target.value);
+  document.getElementById('v-tarifa').textContent = state.tarifa.toFixed(2);
+  const pct = ((e.target.value - e.target.min) / (e.target.max - e.target.min) * 100).toFixed(1);
+  e.target.style.setProperty('--pct', pct + '%');
+  render();
+});
+initSlider('s-tarifa');
+
+document.getElementById('s-energia').addEventListener('input', e => {
+  state.energia = parseFloat(e.target.value);
+  document.getElementById('v-energia').textContent = state.energia.toFixed(2);
+  const pct = ((e.target.value - e.target.min) / (e.target.max - e.target.min) * 100).toFixed(1);
+  e.target.style.setProperty('--pct', pct + '%');
+  render();
+});
+initSlider('s-energia');
+
+// ── CÁLCULOS ──────────────────────────────────────
+function fmt(n, d=0) { return Math.round(n).toLocaleString('pt-PT'); }
+function fmtK(n) { return n >= 1000 ? (n/1000).toFixed(1) + ' k' : Math.round(n).toString(); }
+
+function calcular() {
+  const c    = CULTURAS.find(x => x.id === state.culturaId);
+  const area = state.area;
+  const rId  = state.regaId;
+
+  // Água que chega à planta (hm³/ano)
+  const aguaPlanta  = area * c.efPlanta * c.lkg / 1e6;
+  // Água captada antes e depois da reconversão
+  const captadaAtual = aguaPlanta / EFIC[rId];
+  const captadaPrec  = aguaPlanta / EFIC.precisao;
+  const poupancaAgua = captadaAtual - captadaPrec; // hm³/ano
+
+  // Poupança em água (€/ano)
+  const poupancaAguaEur = poupancaAgua * 1e6 * state.tarifa;
+
+  // Poupança em energia de bombagem (€/ano)
+  const energiaAtual = captadaAtual * 1e6 * ENERGIA_BOMBAGEM[rId];
+  const energiaPrec  = captadaPrec  * 1e6 * ENERGIA_BOMBAGEM.precisao;
+  const poupancaEnerg = (energiaAtual - energiaPrec) * state.energia;
+
+  // Poupança total anual
+  const poupancaTotal = poupancaAguaEur + poupancaEnerg;
+
+  // Investimento
+  const custoHa      = CUSTO_INSTALACAO[rId];
+  const investTotal  = area * custoHa;
+  const investLiq    = investTotal * (1 - state.subsidio / 100);
+
+  // Payback
+  const payback = poupancaTotal > 0 ? investLiq / poupancaTotal : Infinity;
+
+  // VPL 10 anos (taxa desconto 4%)
+  const TAXA = 0.04;
+  let vpl = -investLiq;
+  for (let i = 1; i <= 10; i++) vpl += poupancaTotal / Math.pow(1 + TAXA, i);
+
+  // Acumulado por ano
+  const acumulado = [];
+  for (let i = 0; i <= 10; i++) {
+    acumulado.push(poupancaTotal * i - investLiq);
+  }
+
+  return { poupancaAgua, poupancaAguaEur, poupancaEnerg, poupancaTotal, captadaAtual, captadaPrec, investTotal, investLiq, payback, vpl, acumulado, custoHa, aguaPlanta };
+}
+
+function renderSeca() {
+  const res = calcular();
+  const sc  = SECAS.find(x => x.id === state.secaId);
+
+  const box = document.getElementById('seca-box');
+  box.className = 'seca-box ' + sc.cls;
+  document.getElementById('sb-dot').style.background = sc.dot;
+  const stEl = document.getElementById('sb-title');
+  stEl.className = 'sb-title ' + sc.cls;
+  stEl.textContent = TITULOS_SECA[sc.id];
+
+  // Sem reconversão: corte aplica-se ao captado atual
+  const corteAtual = res.captadaAtual * sc.corte * 1e6; // m³
+  // Com reconversão: poupança estrutural absorve parte do corte
+  const corteResidual = Math.max(0, res.captadaPrec * sc.corte * 1e6 - (res.poupancaAgua * 1e6 * 0.5));
+  const bufferM3 = res.poupancaAgua * 1e6; // m³ poupados com precisão
+  const corteAbsorvido = Math.min(bufferM3, corteAtual);
+  const pctProtegido = res.captadaAtual > 0 ? Math.round(corteAbsorvido / (res.captadaAtual * 1e6) * 100) : 0;
+
+  const custoSeca = corteAtual * state.tarifa; // custo adicional de substituição
+  const custoSecaProteg = Math.max(0, (corteAtual - corteAbsorvido)) * state.tarifa;
+
+  document.getElementById('sb-metrics').innerHTML = [
+    { val: fmt(corteAtual / 1e3) + ' mil m³', lbl: 'corte imposto pela APA (sem reconversão)' },
+    { val: fmt(corteAbsorvido / 1e3) + ' mil m³', lbl: 'absorvidos pela poupança estrutural' },
+  ].map(m => `<div><div class="sb-m-val ${sc.cls}">${m.val}</div><div class="sb-m-lbl ${sc.cls}">${m.lbl}</div></div>`).join('');
+
+  const notas = {
+    normal:   'Sem restrições. A poupança estrutural de ' + res.poupancaAgua.toFixed(3) + ' hm³/ano reduz custos operacionais — mesmo em ano normal.',
+    moderada: 'Com reconversão, ' + pctProtegido + '% do corte imposto é absorvido pela eficiência instalada. A exploração mantém produção enquanto vizinhos sem reconversão reduzem.',
+    severa:   'Em seca severa, a reconversão funciona como seguro operacional. O corte da APA afeta menos a exploração reconvertida — e o retorno do investimento acelera nestes anos.',
+  };
+  const noteEl = document.getElementById('sb-note');
+  noteEl.className = 'sb-note ' + sc.cls;
+  noteEl.textContent = notas[sc.id];
+}
+
+function render() {
+  const res  = calcular();
+  const area = state.area;
+  const c    = CULTURAS.find(x => x.id === state.culturaId);
+
+  // Hero
+  document.getElementById('r-invest').textContent       = fmt(res.investTotal) + ' €';
+  document.getElementById('r-invest-liq').textContent   = fmt(res.investLiq) + ' €';
+  document.getElementById('r-poupanca-ano').textContent = fmt(res.poupancaTotal) + ' €';
+  document.getElementById('r-payback').textContent      = res.payback < 50 ? res.payback.toFixed(1) + ' anos' : '> 50 anos';
+
+  // Cor payback
+  const pbEl = document.getElementById('r-payback');
+  pbEl.className = 'h-val ' + (res.payback <= 5 ? 'pos' : res.payback <= 10 ? 'warn' : 'neg');
+
+  // Métricas detalhe
+  const ml = document.getElementById('metric-list');
+  ml.innerHTML = [
+    { k: 'Custo de instalação (€/ha)',               v: fmt(res.custoHa) + ' €/ha',           cls: '' },
+    { k: 'Investimento total',                        v: fmt(res.investTotal) + ' €',           cls: 'neg' },
+    { k: 'Subsídio PAC (' + state.subsidio + '%)',    v: '− ' + fmt(res.investTotal * state.subsidio/100) + ' €', cls: 'pos' },
+    { k: 'Investimento líquido',                      v: fmt(res.investLiq) + ' €',             cls: 'neg' },
+    { k: 'Poupança em água (€/ano)',                  v: fmt(res.poupancaAguaEur) + ' €/ano',   cls: 'pos' },
+    { k: 'Poupança em energia bombagem (€/ano)',      v: fmt(res.poupancaEnerg) + ' €/ano',     cls: 'pos' },
+    { k: 'Poupança total anual',                      v: fmt(res.poupancaTotal) + ' €/ano',     cls: 'pos' },
+    { k: 'VPL a 10 anos (taxa 4%)',                   v: fmt(res.vpl) + ' €',                   cls: res.vpl >= 0 ? 'pos' : 'neg' },
+    { k: 'Água poupada anualmente',                   v: res.poupancaAgua.toFixed(3) + ' hm³/ano', cls: 'pos' },
+  ].map(m => `<div class="metric-row"><span class="mk">${m.k}</span><span class="mv ${m.cls}">${m.v}</span></div>`).join('');
+
+  // Gráfico acumulado
+  const cb = document.getElementById('chart-bars');
+  cb.innerHTML = '';
+  const maxAbs = Math.max(...res.acumulado.map(Math.abs), res.investLiq);
+  const HEIGHT = 110;
+
+  for (let i = 0; i <= 10; i++) {
+    const val = res.acumulado[i];
+    const col = document.createElement('div');
+    col.className = 'chart-bar-col';
+    const h = Math.round(Math.abs(val) / maxAbs * HEIGHT);
+    const color = val < 0 ? 'inv' : 'sav';
+    col.innerHTML = `
+      <div class="chart-bar ${color}" style="height:${h}px"></div>
+      <div class="chart-bar-label">${i === 0 ? 'Inv.' : 'A' + i}</div>`;
+    cb.appendChild(col);
+  }
+
+  const paybackAnno = Math.ceil(res.payback);
+  const noteEl = document.getElementById('chart-note');
+  if (res.payback <= 10) {
+    noteEl.textContent = 'Payback no ano ' + paybackAnno + '. A partir daí a exploração está em lucro líquido.';
+  } else {
+    noteEl.textContent = 'Com os pressupostos atuais o payback excede 10 anos. Aumente o subsídio PAC ou a tarifa de água para melhorar o retorno.';
+  }
+
+  // GO insight
+  const heads = {
+    low:  'Retorno rápido — a reconversão paga-se em menos de 5 anos.',
+    mid:  'Retorno médio — viável mas dependente do subsídio PAC.',
+    high: 'Retorno longo — o argumento principal é o valor do seguro hídrico, não o retorno financeiro direto.',
+  };
+  const tier = res.payback <= 5 ? 'low' : res.payback <= 10 ? 'mid' : 'high';
+  document.getElementById('go-insight').textContent = heads[tier];
+  document.getElementById('go-body').textContent =
+    `Um investimento de ${fmt(res.investLiq)} € líquidos em ${area} ha de ${c.nome.toLowerCase()} gera ${fmt(res.poupancaTotal)} €/ano em poupanças de água e energia. ` +
+    `Payback de ${res.payback.toFixed(1)} anos. VPL a 10 anos: ${fmt(res.vpl)} €. ` +
+    (res.vpl > 0
+      ? `O projeto cria valor mesmo sem considerar o benefício adicional em anos de seca — onde a poupança estrutural funciona como buffer operacional.`
+      : `Sem subsídio PAC o projeto tem VPL negativo. Com o apoio de ${state.subsidio}% o custo líquido desce para ${fmt(res.investLiq)} € — mas o argumento principal é o valor do seguro hídrico em anos de seca.`
+    );
+
+  renderSeca();
+}
+
+render();
+</script>
+</body>
+</html>
