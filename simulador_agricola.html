@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Simulador Hídrico Agrícola — GO 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #F2EFE9;
+  --surface: #FDFCF9;
+  --ink:     #1C1A16;
+  --ink2:    #5C5850;
+  --ink3:    #9C9890;
+  --green:   #2A6B4A;
+  --green-l: #E0F2E9;
+  --green-d: #1A4A32;
+  --red:     #C84B2F;
+  --red-l:   #FDE8E5;
+  --amber:   #B87420;
+  --amber-l: #FDF0DC;
+  --line:    rgba(28,26,22,0.1);
+  --r:       12px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  line-height: 1.6;
+  padding-bottom: 3rem;
+}
+
+/* ── HEADER ── */
+.app-header {
+  background: var(--ink);
+  padding: 1.25rem 1.1rem 1.1rem;
+}
+.eyebrow {
+  font-size: 9px; letter-spacing: .16em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: .35rem;
+}
+.app-title {
+  font-family: 'Lora', serif;
+  font-size: 1.15rem; font-weight: 600;
+  color: #fff; line-height: 1.25;
+}
+.app-title span { color: #7ACC94; font-style: italic; }
+.app-sub {
+  font-size: 11px; color: rgba(255,255,255,0.38);
+  margin-top: .3rem; line-height: 1.5;
+}
+
+/* ── SECTION CARD ── */
+.section {
+  margin: 1rem .9rem 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.section-head {
+  padding: .7rem 1rem;
+  border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; gap: .5rem;
+}
+.section-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--ink); color: #fff;
+  font-size: 10px; font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.section-title { font-size: 12px; font-weight: 500; color: var(--ink); }
+.section-body  { padding: .9rem 1rem; }
+
+/* ── SLIDER ── */
+.ctrl-row { margin-bottom: 1rem; }
+.ctrl-row:last-child { margin-bottom: 0; }
+.ctrl-top {
+  display: flex; justify-content: space-between;
+  align-items: baseline; margin-bottom: .35rem;
+}
+.ctrl-label { font-size: 12px; font-weight: 500; color: var(--ink); }
+.ctrl-val {
+  font-family: 'Lora', serif;
+  font-size: 1.1rem; color: var(--green);
+}
+.ctrl-hint { font-size: 10px; color: var(--ink3); margin-top: 3px; }
+
+input[type=range] {
+  width: 100%; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px;
+  background: transparent; outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(
+    to right,
+    var(--green) var(--pct, 18%),
+    #D5D0C8 var(--pct, 18%)
+  );
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--green); margin-top: -9px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.18);
+}
+
+/* ── CULTURA GRID ── */
+.cultura-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.c-btn {
+  background: var(--bg); border: 1.5px solid var(--line);
+  border-radius: 8px; padding: .55rem .4rem;
+  text-align: center; cursor: pointer;
+  transition: all .15s; font-family: 'DM Sans', sans-serif;
+}
+.c-btn:active { transform: scale(.97); }
+.c-btn.active { background: var(--green); border-color: var(--green); }
+.c-btn .cn { font-size: 12px; font-weight: 400; color: var(--ink); line-height: 1.3; }
+.c-btn .cv { font-size: 10px; color: var(--ink3); margin-top: 2px; }
+.c-btn.active .cn { color: #fff; }
+.c-btn.active .cv { color: rgba(255,255,255,.65); }
+
+/* ── REGA GRID ── */
+.rega-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.r-btn {
+  background: var(--bg); border: 1.5px solid var(--line);
+  border-radius: 8px; padding: .6rem .4rem;
+  text-align: center; cursor: pointer;
+  transition: all .15s; font-family: 'DM Sans', sans-serif;
+}
+.r-btn:active { transform: scale(.97); }
+.r-btn.active { background: var(--green); border-color: var(--green); }
+.r-btn .rn { font-size: 12px; font-weight: 400; color: var(--ink); line-height: 1.3; }
+.r-btn .re { font-size: 10px; color: var(--ink3); margin-top: 2px; }
+.r-btn.active .rn { color: #fff; }
+.r-btn.active .re { color: rgba(255,255,255,.65); }
+
+/* ── SECA PILLS ── */
+.seca-pills { display: flex; gap: 6px; }
+.s-pill {
+  flex: 1; border: 1.5px solid var(--line);
+  border-radius: 8px; padding: .55rem .4rem;
+  text-align: center; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .15s;
+  background: var(--bg);
+}
+.s-pill:active { transform: scale(.97); }
+.s-pill .sp-n { font-size: 12px; font-weight: 400; color: var(--ink); display: block; }
+.s-pill .sp-f { font-size: 9px; color: var(--ink3); display: block; margin-top: 2px; }
+.s-pill.active-normal   { background: var(--green-l); border-color: var(--green); }
+.s-pill.active-normal .sp-n   { color: var(--green-d); font-weight: 500; }
+.s-pill.active-normal .sp-f   { color: var(--green); }
+.s-pill.active-moderada { background: var(--amber-l); border-color: var(--amber); }
+.s-pill.active-moderada .sp-n { color: #7A4C10; font-weight: 500; }
+.s-pill.active-moderada .sp-f { color: var(--amber); }
+.s-pill.active-severa   { background: var(--red-l);   border-color: var(--red); }
+.s-pill.active-severa .sp-n   { color: #A32D2D; font-weight: 500; }
+.s-pill.active-severa .sp-f   { color: var(--red); }
+
+/* ── HERO RESULTS ── */
+.hero {
+  margin: 1rem .9rem 0;
+  background: var(--ink);
+  border-radius: var(--r);
+  padding: 1.1rem; color: #fff;
+}
+.hero-label {
+  font-size: 9px; letter-spacing: .12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.3); margin-bottom: .8rem;
+}
+.hero-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .85rem; }
+.h-val { font-family: 'Lora', serif; font-size: 1.7rem; line-height: 1; margin-bottom: .2rem; }
+.h-val.pos { color: #7ACC94; }
+.h-val.neg { color: #F09595; }
+.h-desc { font-size: 10px; color: rgba(255,255,255,0.38); line-height: 1.4; }
+
+/* ── BARS ── */
+.bar-list { display: flex; flex-direction: column; gap: .7rem; }
+.b-top { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 3px; }
+.b-name { color: var(--ink2); }
+.b-fig  { font-weight: 500; color: var(--ink); }
+.b-track { background: var(--bg); border-radius: 2px; height: 8px; overflow: hidden; }
+.b-fill  { height: 100%; border-radius: 2px; transition: width .55s cubic-bezier(.4,0,.2,1); }
+
+/* ── SECA RESULT ── */
+.seca-res {
+  border-radius: var(--r); padding: 1rem;
+  border: 1px solid; margin: 1rem .9rem 0;
+}
+.seca-res.normal   { background: var(--green-l); border-color: #9FE1CB; }
+.seca-res.moderada { background: var(--amber-l); border-color: #FAC775; }
+.seca-res.severa   { background: var(--red-l);   border-color: #F7C1C1; }
+.sr-head { display: flex; align-items: center; gap: .5rem; margin-bottom: .65rem; }
+.sr-dot  { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.sr-title { font-size: 12px; font-weight: 500; }
+.sr-title.normal   { color: #1A5E35; }
+.sr-title.moderada { color: #7A4C10; }
+.sr-title.severa   { color: #A32D2D; }
+.sr-metrics { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; margin-bottom: .65rem; }
+.sr-m-val { font-family: 'Lora', serif; font-size: 1.15rem; line-height: 1; margin-bottom: 2px; }
+.sr-m-val.normal   { color: #1A5E35; }
+.sr-m-val.moderada { color: #7A4C10; }
+.sr-m-val.severa   { color: #A32D2D; }
+.sr-m-lbl { font-size: 10px; line-height: 1.35; }
+.sr-m-lbl.normal   { color: #2A7A50; }
+.sr-m-lbl.moderada { color: #8A5C20; }
+.sr-m-lbl.severa   { color: #B03030; }
+.sr-action {
+  font-size: 11px; line-height: 1.6;
+  padding-top: .55rem; border-top: 1px solid rgba(28,26,22,0.08);
+}
+.sr-action.normal   { color: #2A7A50; }
+.sr-action.moderada { color: #8A5C20; }
+.sr-action.severa   { color: #B03030; }
+
+/* ── GO INSIGHT ── */
+.go-box {
+  margin: 1rem .9rem 0; background: var(--surface);
+  border: 1px solid var(--line); border-radius: var(--r); padding: 1rem;
+}
+.go-label {
+  font-size: 9px; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: .6rem;
+}
+.go-insight {
+  font-family: 'Lora', serif; font-size: .97rem; font-style: italic;
+  line-height: 1.55; color: var(--ink); margin-bottom: .5rem;
+}
+.go-body { font-size: 11px; color: var(--ink2); line-height: 1.65; }
+
+/* ── SOURCE ── */
+.source {
+  font-size: 10px; color: var(--ink3);
+  text-align: center; padding: 1.25rem .9rem 0; line-height: 1.55;
+}
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="eyebrow">Gestão de Operações · 2025</div>
+  <div class="app-title">Quanto custa <span>não planear</span> a água?</div>
+  <div class="app-sub">Configura a exploração e vê o impacto em tempo real.</div>
+</header>
+
+<!-- 1 · Exploração -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num">1</div>
+    <div class="section-title">Exploração agrícola</div>
+  </div>
+  <div class="section-body">
+    <div class="ctrl-row">
+      <div class="ctrl-top">
+        <span class="ctrl-label">Área irrigada</span>
+        <span class="ctrl-val" id="v-area">100 ha</span>
+      </div>
+      <input type="range" id="s-area" min="10" max="500" step="10" value="100">
+      <div class="ctrl-hint">Média Alentejo: 62,9 ha · Alqueva: 130 mil ha total</div>
+    </div>
+    <div class="ctrl-row">
+      <div class="ctrl-label" style="margin-bottom:.5rem">Cultura principal</div>
+      <div class="cultura-grid" id="cultura-grid"></div>
+      <div class="ctrl-hint" style="margin-top:5px">Intensidade hídrica média — FAO Aquastat / DGADR</div>
+    </div>
+    <div class="ctrl-row" style="margin-bottom:0">
+      <div class="ctrl-label" style="margin-bottom:.5rem">Sistema de rega atual</div>
+      <div class="rega-grid" id="rega-grid"></div>
+      <div class="ctrl-hint" style="margin-top:5px">Eficiência = % da água captada que chega à planta</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2 · Cenário -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num">2</div>
+    <div class="section-title">Cenário hídrico (SNIRH)</div>
+  </div>
+  <div class="section-body">
+    <div class="seca-pills" id="seca-pills"></div>
+    <div class="ctrl-hint" style="margin-top:6px">Frequências históricas nas bacias do Sul de Portugal (2000–2024)</div>
+  </div>
+</div>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-label">Resultados</div>
+  <div class="hero-grid">
+    <div><div class="h-val neg" id="r-consumo">—</div><div class="h-desc">consumo anual atual (hm³/ano)</div></div>
+    <div><div class="h-val pos" id="r-poupanca">—</div><div class="h-desc">poupança c/ rega de precisão (hm³/ano)</div></div>
+    <div><div class="h-val neg" id="r-custo">—</div><div class="h-desc">custo estimado da ineficiência (€/ano)</div></div>
+    <div><div class="h-val pos" id="r-pct">—</div><div class="h-desc">redução potencial de consumo</div></div>
+  </div>
+</div>
+
+<!-- 3 · Barras -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-num">3</div>
+    <div class="section-title">Consumo atual vs. rega de precisão</div>
+  </div>
+  <div class="section-body">
+    <div class="bar-list" id="bar-list"></div>
+    <div class="ctrl-hint" style="margin-top:8px">Aspersão → gota-a-gota: −40 a −50% · Gravidade → aspersão: −20 a −30%</div>
+  </div>
+</div>
+
+<!-- 4 · Seca -->
+<div class="seca-res normal" id="seca-res">
+  <div class="sr-head">
+    <div class="sr-dot" id="sr-dot"></div>
+    <div class="sr-title normal" id="sr-title"></div>
+  </div>
+  <div class="sr-metrics" id="sr-metrics"></div>
+  <div class="sr-action normal" id="sr-action"></div>
+</div>
+
+<!-- 5 · GO -->
+<div class="go-box">
+  <div class="go-label">Lição de Gestão de Operações</div>
+  <div class="go-insight" id="go-insight"></div>
+  <div class="go-body"    id="go-body"></div>
+</div>
+
+<div class="source">
+  FAO Aquastat · DGADR · APA / SNIRH · CDP Water Security Report (2023)<br>
+  Tarifa referência: 0,04 €/m³ (captações públicas APA). Valores médios nacionais.
+</div>
+
+<script>
+const CULTURAS = [
+  { id:'tomate',   nome:'Tomate',   sub:'300 L/kg',  lkg:300,  precLkg:150,  prodDef:40 },
+  { id:'arroz',    nome:'Arroz',    sub:'2800 L/kg', lkg:2800, precLkg:1800, prodDef:7  },
+  { id:'milho',    nome:'Milho',    sub:'700 L/kg',  lkg:700,  precLkg:420,  prodDef:9  },
+  { id:'olival',   nome:'Olival',   sub:'1200 L/kg', lkg:1200, precLkg:700,  prodDef:5  },
+  { id:'vinha',    nome:'Vinha',    sub:'200 L/kg',  lkg:200,  precLkg:100,  prodDef:8  },
+  { id:'citrinos', nome:'Citrinos', sub:'800 L/kg',  lkg:800,  precLkg:480,  prodDef:25 },
+];
+const REGAS = [
+  { id:'gravidade', nome:'Gravidade',   sub:'efic. 45%' },
+  { id:'aspersao',  nome:'Aspersão',    sub:'efic. 65%' },
+  { id:'precisao',  nome:'Gota-a-gota', sub:'efic. 90%' },
+];
+const SECAS = [
+  { id:'normal',   nome:'Normal',    sub:'reserv. >50%', freq:'60% dos meses', dot:'#3A9960', corte:0,    cls:'normal'   },
+  { id:'moderada', nome:'Seca mod.', sub:'25–50%',        freq:'25% dos meses', dot:'#E8A030', corte:0.25, cls:'moderada' },
+  { id:'severa',   nome:'Seca sev.', sub:'<25% · APA',    freq:'15% dos meses', dot:'#E85340', corte:0.45, cls:'severa'   },
+];
+const TITULOS = {
+  normal:   'Cenário normal — reservatórios > 50%',
+  moderada: 'Seca moderada — reservatórios 25–50%',
+  severa:   'Seca severa — reservatórios < 25% · APA pode restringir',
+};
+const ACOES = {
+  normal:   'Rega a 100% da dotação. Constituir buffer de stocks 3–4 semanas. Aproveitar energia solar diurna para bombagem.',
+  moderada: 'Reduzir dotação 20–25%. Priorizar culturas de maior margem. Verificar fornecedores upstream (WRI Aqueduct). Ativar captação alternativa se disponível.',
+  severa:   'Dotação mínima legal (50–55%). Suspender culturas de baixa margem. Comunicar clientes a jusante. Os dados SNIRH estavam disponíveis semanas antes — o plano devia estar ativado.',
+};
+
+let state = { area:100, culturaId:'tomate', regaId:'aspersao', secaId:'normal' };
+
+// Build cultura
+const cGrid = document.getElementById('cultura-grid');
+CULTURAS.forEach(c => {
+  const b = document.createElement('button');
+  b.className = 'c-btn' + (c.id === state.culturaId ? ' active' : '');
+  b.dataset.id = c.id;
+  b.innerHTML = `<div class="cn">${c.nome}</div><div class="cv">${c.sub}</div>`;
+  b.onclick = () => {
+    state.culturaId = c.id;
+    cGrid.querySelectorAll('.c-btn').forEach(x => x.classList.toggle('active', x.dataset.id === c.id));
+    render();
+  };
+  cGrid.appendChild(b);
+});
+
+// Build rega
+const rGrid = document.getElementById('rega-grid');
+REGAS.forEach(r => {
+  const b = document.createElement('button');
+  b.className = 'r-btn' + (r.id === state.regaId ? ' active' : '');
+  b.dataset.id = r.id;
+  b.innerHTML = `<div class="rn">${r.nome}</div><div class="re">${r.sub}</div>`;
+  b.onclick = () => {
+    state.regaId = r.id;
+    rGrid.querySelectorAll('.r-btn').forEach(x => x.classList.toggle('active', x.dataset.id === r.id));
+    render();
+  };
+  rGrid.appendChild(b);
+});
+
+// Build seca
+const sPills = document.getElementById('seca-pills');
+SECAS.forEach(sc => {
+  const b = document.createElement('button');
+  b.className = 's-pill' + (sc.id === state.secaId ? ` active-${sc.id}` : '');
+  b.dataset.id = sc.id;
+  b.innerHTML = `<span class="sp-n">${sc.nome}</span><span class="sp-f">${sc.freq}</span>`;
+  b.onclick = () => {
+    state.secaId = sc.id;
+    sPills.querySelectorAll('.s-pill').forEach(x => {
+      x.className = 's-pill' + (x.dataset.id === sc.id ? ` active-${sc.id}` : '');
+    });
+    render();
+  };
+  sPills.appendChild(b);
+});
+
+// Slider
+const areaEl = document.getElementById('s-area');
+function updateTrack(el) {
+  const pct = ((el.value - el.min) / (el.max - el.min) * 100).toFixed(1);
+  el.style.setProperty('--pct', pct + '%');
+}
+areaEl.addEventListener('input', e => {
+  state.area = parseInt(e.target.value);
+  document.getElementById('v-area').textContent = state.area.toLocaleString('pt-PT') + ' ha';
+  updateTrack(e.target);
+  render();
+});
+updateTrack(areaEl);
+
+function fmt(n, d=3) { return n.toFixed(d); }
+function fmtInt(n) { return Math.round(n).toLocaleString('pt-PT'); }
+
+function render() {
+  const c  = CULTURAS.find(x => x.id === state.culturaId);
+  const sc = SECAS.find(x => x.id === state.secaId);
+  const r  = REGAS.find(x => x.id === state.regaId);
+  const area = state.area;
+
+  const consumoAtual = area * c.prodDef * c.lkg / 1e6;
+  const consumoPrec  = area * c.prodDef * c.precLkg / 1e6;
+  const poupanca     = consumoAtual - consumoPrec;
+  const poupPct      = Math.round(poupanca / consumoAtual * 100);
+  const custoInefic  = poupanca * 1e6 * 0.04;
+  const corteApa     = consumoAtual * sc.corte;
+  const consumoSec   = consumoAtual - corteApa;
+  const prodPerd     = corteApa > 0 ? (corteApa / (c.lkg / 1e6)) / c.prodDef : 0;
+  const percProd     = Math.round(prodPerd / (area * c.prodDef) * 100);
+  const buffer       = Math.min(poupanca, corteApa);
+  const prodRecup    = buffer > 0 ? (buffer / (c.lkg / 1e6)) / c.prodDef : 0;
+
+  document.getElementById('r-consumo').textContent  = fmt(consumoAtual) + ' hm³';
+  document.getElementById('r-poupanca').textContent  = fmt(poupanca) + ' hm³';
+  document.getElementById('r-custo').textContent     = fmtInt(custoInefic) + ' €';
+  document.getElementById('r-pct').textContent       = '−' + poupPct + '%';
+
+  const bl = document.getElementById('bar-list');
+  bl.innerHTML = '';
+  [
+    { nome:'Consumo atual (' + r.nome + ')', val:consumoAtual, color:'#E85340' },
+    { nome:'Com rega de precisão',           val:consumoPrec,  color:'#3A9960' },
+    { nome:'Poupança anual',                 val:poupanca,     color:'#E8A030' },
+  ].forEach(b => {
+    const pct = Math.min(Math.round(b.val / consumoAtual * 100), 100);
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="b-top"><span class="b-name">${b.nome}</span><span class="b-fig">${fmt(b.val)} hm³</span></div>
+      <div class="b-track"><div class="b-fill" style="width:0%;background:${b.color}" data-pct="${pct}"></div></div>`;
+    bl.appendChild(row);
+  });
+  setTimeout(() => {
+    bl.querySelectorAll('.b-fill').forEach(el => { el.style.width = el.dataset.pct + '%'; });
+  }, 60);
+
+  const sr = document.getElementById('seca-res');
+  sr.className = 'seca-res ' + sc.cls;
+  document.getElementById('sr-dot').style.background = sc.dot;
+  const stEl = document.getElementById('sr-title');
+  stEl.className = 'sr-title ' + sc.cls;
+  stEl.textContent = TITULOS[sc.id];
+
+  document.getElementById('sr-metrics').innerHTML = [
+    { val:fmt(consumoSec)+' hm³', lbl:'água disponível após corte' },
+    { val:fmtInt(prodPerd)+' t',  lbl:'produção em risco' },
+    { val:fmtInt(prodRecup)+' t', lbl:'recuperadas c/ precisão' },
+  ].map(m => `<div><div class="sr-m-val ${sc.cls}">${m.val}</div><div class="sr-m-lbl ${sc.cls}">${m.lbl}</div></div>`).join('');
+
+  const saEl = document.getElementById('sr-action');
+  saEl.className = 'sr-action ' + sc.cls;
+  saEl.textContent = ACOES[sc.id];
+
+  const heads = {
+    normal:   'Ano normal: o custo da ineficiência já existe — independentemente da seca.',
+    moderada: 'Seca moderada: a reconversão deixa de ser boa prática — passa a ser vantagem competitiva.',
+    severa:   'Seca severa: evento previsível sem plano de contingência é uma crise operacional evitável.',
+  };
+  const bodies = {
+    normal:   `Uma exploração de ${area} ha de ${c.nome.toLowerCase()} com ${r.nome} paga estimativamente ${fmtInt(custoInefic)} € por ano em água que não chega à planta. Com rega de precisão pouparia ${fmt(poupanca)} hm³ — uma redução de ${poupPct}% no consumo. Este custo existe independentemente da seca.`,
+    moderada: `Com cortes de 25% impostos pela APA, a exploração sem reconversão perde ${fmtInt(prodPerd)} toneladas. Com rega de precisão, a poupança de ${fmt(poupanca)} hm³ funciona como buffer — ${fmtInt(prodRecup)} toneladas ficam protegidas. A diferença não é tecnologia: é ter integrado o risco hídrico no plano de produção.`,
+    severa:   `Com restrições APA de 45%, a exploração convencional perde ${fmtInt(prodPerd)} toneladas — ${percProd}% da produção. Os dados SNIRH estavam disponíveis semanas antes. A ausência de um plano S&OP com cenários hídricos transforma informação disponível em crise evitável — o mesmo padrão do México 2024.`,
+  };
+
+  document.getElementById('go-insight').textContent = heads[sc.id];
+  document.getElementById('go-body').textContent    = bodies[sc.id];
+}
+
+render();
+</script>
+</body>
+</html>
