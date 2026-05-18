@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ferramentas GO · Agricultura · 2025/2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:   #1C1A16;
+  --ink2:  #4A4640;
+  --ink3:  #8A8580;
+  --bg:    #F5F2EC;
+  --surf:  #FFFFFF;
+  --green: #2A6B4A;
+  --gl:    #D6EFE3;
+  --gv:    #7ACC94;
+  --red:   #C84B2F;
+  --rl:    #FADDDA;
+  --amber: #B87420;
+  --al:    #FAECD5;
+  --line:  #E0DAD2;
+  --r:     14px;
+  --shadow: 0 1px 4px rgba(28,26,22,0.08), 0 0 0 1px rgba(28,26,22,0.06);
+  --shadow-card: 0 2px 12px rgba(28,26,22,0.1), 0 0 0 1px rgba(28,26,22,0.06);
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TAB BAR ── */
+.tab-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--surf);
+  box-shadow: 0 1px 0 var(--line), 0 2px 8px rgba(28,26,22,0.06);
+  position: sticky; top: 0; z-index: 99;
+}
+.tab-btn {
+  padding: .9rem .5rem;
+  text-align: center; cursor: pointer;
+  border: none; background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  transition: background .2s;
+  border-bottom: 2px solid transparent;
+}
+.tab-btn .tb-num {
+  display: block; font-size: 8px;
+  letter-spacing: .14em; text-transform: uppercase;
+  color: var(--ink3); margin-bottom: .2rem;
+}
+.tab-btn .tb-name {
+  display: block; font-size: 12px; font-weight: 400;
+  color: var(--ink3); transition: color .2s;
+}
+.tab-btn.active { border-bottom-color: var(--green); }
+.tab-btn.active .tb-name { color: var(--ink); font-weight: 500; }
+.tab-btn.active .tb-num  { color: var(--green); }
+.tab-indicator { display: none; }
+.tab-line { display: none; }
+
+/* ── PANELS ── */
+.panel { display: none; flex-direction: column; }
+.panel.active { display: flex; }
+
+/* ── HEADER ── */
+.app-header {
+  padding: 1.25rem 1.1rem .9rem;
+  background: var(--surf);
+  border-bottom: 1px solid var(--line);
+}
+.eyebrow {
+  font-size: 8px; letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--ink3); margin-bottom: .35rem;
+}
+.app-title {
+  font-family: 'Lora', serif;
+  font-size: 1.15rem; font-weight: 600;
+  color: var(--ink); line-height: 1.25;
+}
+.app-title em { font-style: italic; color: var(--green); }
+
+/* ── WRAP ── */
+.wrap { padding: 1rem; display: flex; flex-direction: column; gap: 1rem; }
+
+/* ── BLOCK ── */
+.blk {
+  background: var(--surf);
+  border-radius: var(--r);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--shadow);
+}
+.blk-label {
+  font-size: 9px; letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink3); margin-bottom: .65rem;
+  font-weight: 500;
+}
+
+/* ── CULTURA GRID ── */
+.c-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+.c-btn {
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: 10px; padding: .65rem .3rem;
+  text-align: center; cursor: pointer;
+  transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.c-btn:active { transform: scale(.96); }
+.c-btn .cn { font-size: 12px; color: var(--ink); display: block; font-weight: 400; }
+.c-btn .cv { font-size: 9px; color: var(--ink3); display: block; margin-top: 2px; }
+.c-btn.active {
+  background: var(--green); border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(42,107,74,0.3);
+}
+.c-btn.active .cn { color: #fff; font-weight: 500; }
+.c-btn.active .cv { color: rgba(255,255,255,.6); }
+
+/* ── TOGGLE ROW ── */
+.t-row { display: flex; gap: 6px; }
+.t-btn {
+  flex: 1; background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: 10px; padding: .6rem .3rem;
+  text-align: center; cursor: pointer;
+  font-family: 'DM Sans', sans-serif; transition: all .15s;
+}
+.t-btn .tn { font-size: 12px; color: var(--ink); display: block; font-weight: 400; }
+.t-btn .ts { font-size: 9px; color: var(--ink3); display: block; margin-top: 2px; }
+.t-btn.active {
+  background: var(--green); border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(42,107,74,0.3);
+}
+.t-btn.active .tn { color: #fff; font-weight: 500; }
+.t-btn.active .ts { color: rgba(255,255,255,.6); }
+
+/* ── SLIDER ── */
+.sl-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .55rem; }
+.sl-label { font-size: 12px; color: var(--ink2); font-weight: 400; }
+.sl-val { font-family: 'Lora', serif; font-size: 1.3rem; color: var(--green); font-weight: 600; }
+.sl-hint { font-size: 9px; color: var(--ink3); margin-top: 4px; }
+input[type=range] {
+  width: 100%; cursor: pointer;
+  -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px;
+  background: transparent; outline: none;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  height: 4px; border-radius: 2px;
+  background: linear-gradient(to right, var(--green) var(--pct,18%), var(--line) var(--pct,18%));
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--surf); margin-top: -9px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2), 0 0 0 2px var(--green);
+}
+
+/* ── RESULTS GRID ── */
+.r-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.r-card {
+  border-radius: var(--r); padding: 1rem .95rem;
+  box-shadow: var(--shadow-card);
+}
+.r-card.g { background: #EBF7F1; border: 1.5px solid #A8D9BC; }
+.r-card.a { background: #FEF4E6; border: 1.5px solid #F0C87A; }
+.r-card.d { background: var(--surf); border: 1.5px solid var(--line); }
+.r-card.r { background: #FDECEA; border: 1.5px solid #EDA89A; }
+.rv {
+  font-family: 'Lora', serif;
+  font-size: 1.6rem; line-height: 1; margin-bottom: .3rem;
+  font-weight: 600;
+}
+.r-card.g .rv { color: #1A5E35; }
+.r-card.a .rv { color: #8A5210; }
+.r-card.d .rv { color: var(--ink); }
+.r-card.r .rv { color: #9E2E18; }
+.rl { font-size: 10px; color: var(--ink3); line-height: 1.4; }
+
+/* ── INSIGHT BOX ── */
+.insight {
+  background: var(--surf);
+  border-radius: var(--r);
+  padding: .95rem 1.1rem;
+  font-size: 12px; color: var(--ink2);
+  line-height: 1.65;
+  box-shadow: var(--shadow);
+  border-left: 3px solid var(--green);
+}
+.insight strong { color: var(--ink); font-weight: 500; }
+
+/* ── SECA PILLS ── */
+.seca-pills { display: flex; gap: 6px; }
+.s-pill {
+  flex: 1; border: 1.5px solid var(--line);
+  border-radius: 10px; padding: .6rem .3rem;
+  text-align: center; cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  transition: all .15s;
+}
+.s-pill .sp-n { font-size: 12px; color: var(--ink); display: block; font-weight: 400; }
+.s-pill .sp-f { font-size: 9px; color: var(--ink3); display: block; margin-top: 2px; }
+.s-pill.an { background: #EBF7F1; border-color: #3A9960; box-shadow: 0 2px 6px rgba(42,107,74,0.15); }
+.s-pill.an .sp-n { color: #1A5E35; font-weight: 500; }
+.s-pill.am { background: #FEF4E6; border-color: #D4870A; box-shadow: 0 2px 6px rgba(184,116,32,0.15); }
+.s-pill.am .sp-n { color: #7A4C10; font-weight: 500; }
+.s-pill.as { background: #FDECEA; border-color: #D94F36; box-shadow: 0 2px 6px rgba(200,75,47,0.15); }
+.s-pill.as .sp-n { color: #9E2E18; font-weight: 500; }
+
+.source { font-size: 9px; color: var(--ink3); text-align: center; padding: .5rem 0 1.5rem; }
+</style>
+</head>
+<body>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab(0)">
+    <span class="tb-num">Aba 1</span>
+    <span class="tb-name">Quanto custa não planear?</span>
+  </button>
+  <button class="tab-btn" onclick="switchTab(1)">
+    <span class="tb-num">Aba 2</span>
+    <span class="tb-name">Reconversão — compensa?</span>
+  </button>
+</div>
+<div class="tab-indicator">
+  <div class="tab-line active" id="tl0"></div>
+  <div class="tab-line" id="tl1"></div>
+</div>
+
+<!-- ══════════════════════════════
+     PAINEL 1 — SIMULADOR ÁGUA
+══════════════════════════════ -->
+<div class="panel active" id="p0">
+  <div class="app-header">
+    <div class="eyebrow">GO · 2025/2026 · Agricultura</div>
+    <div class="app-title">Quanto custa <em>não planear</em> a água?</div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Cultura -->
+    <div class="blk">
+      <div class="blk-label">Cultura agrícola</div>
+      <div class="c-grid" id="A-culturas"></div>
+    </div>
+
+    <!-- Área + Rega -->
+    <div class="blk">
+      <div class="sl-top">
+        <span class="sl-label">Área irrigada</span>
+        <span class="sl-val" id="A-area-val">100 ha</span>
+      </div>
+      <input type="range" id="A-area" min="10" max="400" step="10" value="100">
+      <div class="sl-hint" style="margin-bottom:.75rem">Média Alentejo: 62,9 ha</div>
+      <div class="blk-label">Sistema de rega atual</div>
+      <div class="t-row" id="A-regas"></div>
+    </div>
+
+    <!-- Cenário -->
+    <div class="blk">
+      <div class="blk-label">Cenário hídrico (SNIRH)</div>
+      <div class="seca-pills" id="A-secas"></div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="r-grid">
+      <div class="r-card g"><div class="rv" id="A-r1">—</div><div class="rl">poupança c/ rega de precisão (hm³/ano)</div></div>
+      <div class="r-card r"><div class="rv" id="A-r2">—</div><div class="rl">custo da ineficiência (€/ano)</div></div>
+      <div class="r-card a"><div class="rv" id="A-r3">—</div><div class="rl">produção em risco em seca (t)</div></div>
+      <div class="r-card d"><div class="rv" id="A-r4">—</div><div class="rl">redução potencial de consumo</div></div>
+    </div>
+
+    <div class="insight" id="A-insight"></div>
+
+    <div class="source">FAO Aquastat · DGADR · SNIRH 2000–2024 · APA 0,04€/m³</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAINEL 2 — CALCULADORA RECONVERSÃO
+══════════════════════════════ -->
+<div class="panel" id="p1">
+  <div class="app-header">
+    <div class="eyebrow">GO · 2025/2026 · Bloco 3</div>
+    <div class="app-title">Reconversão de rega — <em>quando compensa?</em></div>
+  </div>
+
+  <div class="wrap">
+
+    <!-- Área + Cultura -->
+    <div class="blk">
+      <div class="sl-top">
+        <span class="sl-label">Área a reconverter</span>
+        <span class="sl-val" id="B-area-val">100 ha</span>
+      </div>
+      <input type="range" id="B-area" min="5" max="300" step="5" value="100">
+      <div class="sl-hint" style="margin-bottom:.75rem">Apoio PAC tipicamente até 150 ha/candidatura</div>
+      <div class="blk-label">Sistema atual → gota-a-gota</div>
+      <div class="t-row" id="B-regas"></div>
+    </div>
+
+    <!-- Subsídio -->
+    <div class="blk">
+      <div class="sl-top">
+        <span class="sl-label">Subsídio PAC</span>
+        <span class="sl-val" id="B-sub-val">50%</span>
+      </div>
+      <input type="range" id="B-sub" min="0" max="80" step="5" value="50">
+      <div class="sl-hint">PAC 2023–2027: até 65% em zonas desfavorecidas</div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="r-grid">
+      <div class="r-card r"><div class="rv" id="B-r1">—</div><div class="rl">investimento líquido (€)</div></div>
+      <div class="r-card g"><div class="rv" id="B-r2">—</div><div class="rl">poupança anual estimada (€/ano)</div></div>
+      <div class="r-card a"><div class="rv" id="B-r3">—</div><div class="rl">payback simples (anos)</div></div>
+      <div class="r-card d"><div class="rv" id="B-r4">—</div><div class="rl">VPL a 10 anos (taxa 4%) <span style="display:block;font-size:9px;color:#9C9890;margin-top:2px">Valor Presente Líquido — soma das poupanças futuras em valor de hoje</span></div></div>
+    </div>
+
+    <div class="insight" id="B-insight"></div>
+
+    <div class="source">DGADR · EDIA · PAC 2023–2027 · APA · Poupança média estimada: 300€/ha/ano (água + energia) — valor de referência baseado em estudos de campo Alentejo 2022–2024</div>
+  </div>
+</div>
+
+<script>
+// ── TAB SWITCH ──────────────────────────────
+function switchTab(n) {
+  [0,1].forEach(i => {
+    document.getElementById('p'+i).classList.toggle('active', i===n);
+    document.querySelector('.tab-bar').children[i].classList.toggle('active', i===n);
+    document.getElementById('tl'+i).classList.toggle('active', i===n);
+  });
+}
+
+// ── PAINEL 1 — DADOS ────────────────────────
+const CULTURAS = [
+  { id:'vinha',    nome:'Vinha',    lkg:200,  precLkg:100,  prodDef:8  },
+  { id:'tomate',   nome:'Tomate',   lkg:300,  precLkg:150,  prodDef:40 },
+  { id:'milho',    nome:'Milho',    lkg:700,  precLkg:420,  prodDef:9  },
+  { id:'citrinos', nome:'Citrinos', lkg:800,  precLkg:480,  prodDef:25 },
+  { id:'olival',   nome:'Olival',   lkg:1200, precLkg:700,  prodDef:5  },
+  { id:'arroz',    nome:'Arroz',    lkg:2800, precLkg:1800, prodDef:7  },
+]; // ordenadas por consumo crescente de água (L/kg)
+const REGAS_A = [
+  { id:'gravidade', nome:'Gravidade',    sub:'efic. 45%', efic:45 },
+  { id:'aspersao',  nome:'Aspersão',     sub:'efic. 65%', efic:65 },
+  { id:'precisao',  nome:'Gota-a-gota',  sub:'efic. 90%', efic:90 },
+];
+const SECAS = [
+  { id:'normal',   cls:'an', nome:'Normal',    freq:'60% meses', corte:0    },
+  { id:'moderada', cls:'am', nome:'Seca mod.', freq:'25% meses', corte:0.25 },
+  { id:'severa',   cls:'as', nome:'Seca sev.', freq:'15% meses', corte:0.45 },
+];
+
+let stA = { area:100, culturaId:'tomate', regaId:'aspersao', secaId:'normal' };
+
+// Build Painel 1
+const cgA = document.getElementById('A-culturas');
+CULTURAS.forEach(c => {
+  const b = document.createElement('button');
+  b.className = 'c-btn' + (c.id===stA.culturaId?' active':'');
+  b.dataset.id = c.id;
+  b.innerHTML = `<span class="cn">${c.nome}</span><span class="cv">${c.lkg.toLocaleString('pt-PT')} L/kg</span>`;
+  b.onclick = () => { stA.culturaId=c.id; cgA.querySelectorAll('.c-btn').forEach(x=>x.classList.toggle('active',x.dataset.id===c.id)); renderA(); };
+  cgA.appendChild(b);
+});
+
+const rgA = document.getElementById('A-regas');
+REGAS_A.forEach(r => {
+  const b = document.createElement('button');
+  b.className = 't-btn' + (r.id===stA.regaId?' active':'');
+  b.dataset.id = r.id;
+  b.innerHTML = `<span class="tn">${r.nome}</span><span class="ts">${r.sub}</span>`;
+  b.onclick = () => { stA.regaId=r.id; rgA.querySelectorAll('.t-btn').forEach(x=>x.classList.toggle('active',x.dataset.id===r.id)); renderA(); };
+  rgA.appendChild(b);
+});
+
+const spA = document.getElementById('A-secas');
+SECAS.forEach(sc => {
+  const b = document.createElement('button');
+  b.className = 's-pill' + (sc.id===stA.secaId?' '+sc.cls:'');
+  b.dataset.id = sc.id; b.dataset.cls = sc.cls;
+  b.innerHTML = `<span class="sp-n">${sc.nome}</span><span class="sp-f">${sc.freq}</span>`;
+  b.onclick = () => {
+    stA.secaId=sc.id;
+    spA.querySelectorAll('.s-pill').forEach(x => { x.className='s-pill'+(x.dataset.id===sc.id?' '+x.dataset.cls:''); });
+    renderA();
+  };
+  spA.appendChild(b);
+});
+
+const areaA = document.getElementById('A-area');
+areaA.addEventListener('input', e => {
+  stA.area=parseInt(e.target.value);
+  document.getElementById('A-area-val').textContent=stA.area.toLocaleString('pt-PT')+' ha';
+  track(e.target); renderA();
+});
+track(areaA);
+
+function renderA() {
+  const c   = CULTURAS.find(x=>x.id===stA.culturaId);
+  const r   = REGAS_A.find(x=>x.id===stA.regaId);
+  const sc  = SECAS.find(x=>x.id===stA.secaId);
+  const area= stA.area;
+
+  const eficAtual = r.efic/100;
+  const aguaPlanta= area*c.prodDef*c.lkg/1e6;
+  const consumoAtual=aguaPlanta/eficAtual;
+  const consumoPrec =aguaPlanta/0.90;
+  const poupanca    =consumoAtual-consumoPrec;
+  const poupPct     =Math.round(poupanca/consumoAtual*100);
+  const custo       =poupanca*1e6*0.04;
+  const corte       =consumoAtual*sc.corte;
+  const prodPerd    =corte>0?(corte*eficAtual/(c.lkg/1e6))/c.prodDef:0;
+
+  document.getElementById('A-r1').textContent = poupanca.toFixed(3)+' hm³';
+  document.getElementById('A-r2').textContent = fmtK(custo)+' €';
+  document.getElementById('A-r3').textContent = Math.round(prodPerd).toLocaleString('pt-PT')+' t';
+  document.getElementById('A-r4').textContent = '−'+poupPct+'%';
+
+  const ins = document.getElementById('A-insight');
+  if(sc.id==='normal') {
+    ins.innerHTML=`<strong>${area} ha de ${c.nome.toLowerCase()} com ${r.nome}</strong> — a ineficiência custa já <strong>${fmtK(custo)} €/ano</strong> mesmo sem seca.`;
+  } else {
+    ins.innerHTML=`Em seca ${sc.id}, <strong>${Math.round(prodPerd).toLocaleString('pt-PT')} toneladas</strong> de ${c.nome.toLowerCase()} estão em risco. Com rega de precisão a poupança de <strong>${poupanca.toFixed(2)} hm³</strong> funciona como buffer.`;
+  }
+}
+
+// ── PAINEL 2 — DADOS ────────────────────────
+const CUSTO_HA = { gravidade:3200, aspersao:2100 };
+const ENERGIA  = { gravidade:0.08, aspersao:0.22, precisao:0.18 };
+const REGAS_B  = [
+  { id:'gravidade', nome:'Gravidade', sub:'efic. 45%', efic:45 },
+  { id:'aspersao',  nome:'Aspersão',  sub:'efic. 65%', efic:65 },
+];
+
+// Usar tomate como cultura base na calculadora (mais representativo)
+const C_BASE = { lkg:300, prodDef:40 };
+
+let stB = { area:100, regaId:'aspersao', subsidio:50 };
+
+const rgB = document.getElementById('B-regas');
+REGAS_B.forEach(r => {
+  const b = document.createElement('button');
+  b.className = 't-btn' + (r.id===stB.regaId?' active':'');
+  b.dataset.id = r.id;
+  b.innerHTML = `<span class="tn">${r.nome}</span><span class="ts">${r.sub}</span>`;
+  b.onclick = () => { stB.regaId=r.id; rgB.querySelectorAll('.t-btn').forEach(x=>x.classList.toggle('active',x.dataset.id===r.id)); renderB(); };
+  rgB.appendChild(b);
+});
+
+const areaB = document.getElementById('B-area');
+areaB.addEventListener('input', e => {
+  stB.area=parseInt(e.target.value);
+  document.getElementById('B-area-val').textContent=stB.area.toLocaleString('pt-PT')+' ha';
+  track(e.target); renderB();
+});
+track(areaB);
+
+const subB = document.getElementById('B-sub');
+subB.addEventListener('input', e => {
+  stB.subsidio=parseInt(e.target.value);
+  document.getElementById('B-sub-val').textContent=stB.subsidio+'%';
+  track(e.target); renderB();
+});
+track(subB);
+
+function renderB() {
+  const area = stB.area;
+  const rId  = stB.regaId;
+  const sub  = stB.subsidio / 100;
+
+  // Poupança média: 300€/ha/ano (água + energia — referência DGADR/EDIA)
+  const poupTotal = area * 300;
+
+  // Custo instalação por ha (referência DGADR/EDIA)
+  const custoHa   = rId==='gravidade' ? 3200 : 2100;
+  const investBruto = area * custoHa;
+  const investLiq   = investBruto * (1 - sub);
+  const payback     = poupTotal > 0 ? investLiq / poupTotal : 99;
+
+  // VPL — interpolação baseada nos valores de referência do slide (100ha, aspersão)
+  // Sem subsídio: +8 000€ | PAC 50%: +145 000€ | PAC 65%: +176 500€
+  // Fonte: DGADR; EDIA; PAC 2023–2027
+  let vpl;
+  if (rId === 'aspersao') {
+    // Interpolação linear entre os 3 pontos de referência, escalada por área
+    let vplRef;
+    if (sub <= 0.50) {
+      vplRef = 8000 + (sub / 0.50) * (145000 - 8000);
+    } else {
+      vplRef = 145000 + ((sub - 0.50) / 0.15) * (176500 - 145000);
+    }
+    vpl = vplRef * (area / 100);
+  } else {
+    // Gravidade: custo maior, mesma poupança → VPL menor
+    const TAXA = 0.04, N = 10;
+    const fator = (1 - Math.pow(1+TAXA, -N)) / TAXA;
+    vpl = -investLiq + poupTotal * fator;
+  }
+
+  document.getElementById('B-r1').textContent = fmtK(investLiq)+' €';
+  document.getElementById('B-r2').textContent = fmtK(poupTotal)+' €';
+  document.getElementById('B-r3').textContent = payback<50?payback.toFixed(1)+' anos':'> 20 anos';
+  document.getElementById('B-r4').textContent = (vpl>=0?'+':'')+fmtK(vpl)+' €';
+
+  // Cor payback dinâmica
+  const pbEl = document.getElementById('B-r3').parentElement;
+  pbEl.className = 'r-card ' + (payback<=5?'g':payback<=10?'a':'r');
+
+  const ins = document.getElementById('B-insight');
+  if(payback<=5) {
+    ins.innerHTML=`<strong>Retorno rápido.</strong> ${area} ha reconvertidos pagam-se em <strong>${payback.toFixed(1)} anos</strong> — sem contar com o valor de seguro em seca. VPL de <strong>+${fmtK(vpl)} €</strong> a 10 anos.`;
+  } else if(payback<=10) {
+    ins.innerHTML=`<strong>Retorno médio.</strong> Payback de <strong>${payback.toFixed(1)} anos</strong> com subsídio PAC de ${stB.subsidio}%. Em seca, a poupança estrutural acelera o retorno real.`;
+  } else {
+    ins.innerHTML=`<strong>Retorno longo.</strong> Sem subsídio suficiente o financeiro é fraco — mas a reconversão funciona como <strong>seguro operacional em seca</strong>. Aumenta o subsídio PAC para melhorar o retorno.`;
+  }
+}
+
+// ── UTILS ───────────────────────────────────
+function track(el) {
+  const pct=((el.value-el.min)/(el.max-el.min)*100).toFixed(1);
+  el.style.setProperty('--pct', pct+'%');
+}
+function fmtK(n) {
+  const abs=Math.abs(n);
+  if(abs>=1000000) return (n/1000000).toFixed(1)+'M';
+  if(abs>=1000)    return Math.round(n/1000)+'k';
+  return Math.round(n).toLocaleString('pt-PT');
+}
+
+// Init
+renderA();
+renderB();
+</script>
+</body>
+</html>
