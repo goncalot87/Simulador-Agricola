@@ -324,14 +324,14 @@ input[type=range]::-webkit-slider-thumb {
     <!-- Resultados -->
     <div class="r-grid">
       <div class="r-card r"><div class="rv" id="B-r1">—</div><div class="rl">investimento líquido (€)</div></div>
-      <div class="r-card g"><div class="rv" id="B-r2">—</div><div class="rl">poupança anual água + energia (€/ano)</div></div>
+      <div class="r-card g"><div class="rv" id="B-r2">—</div><div class="rl">poupança anual estimada (€/ano)</div></div>
       <div class="r-card a"><div class="rv" id="B-r3">—</div><div class="rl">payback simples (anos)</div></div>
       <div class="r-card d"><div class="rv" id="B-r4">—</div><div class="rl">VPL a 10 anos (taxa 4%) <span style="display:block;font-size:9px;color:#9C9890;margin-top:2px">Valor Presente Líquido — soma das poupanças futuras em valor de hoje</span></div></div>
     </div>
 
     <div class="insight" id="B-insight"></div>
 
-    <div class="source">DGADR · EDIA · PAC 2023–2027 · APA · DGEG 2024</div>
+    <div class="source">DGADR · EDIA · PAC 2023–2027 · APA · Poupança média estimada: 300€/ha/ano (água + energia) — valor de referência baseado em estudos de campo Alentejo 2022–2024</div>
   </div>
 </div>
 
@@ -486,9 +486,8 @@ function renderB() {
   const aguaPlanta  = area*C_BASE.prodDef*C_BASE.lkg/1e6;
   const captAtual   = aguaPlanta/efic;
   const captPrec    = aguaPlanta/0.90;
-  const poupAgua    = (captAtual-captPrec)*1e6*0.04;
-  const poupEnerg   = (captAtual*ENERGIA[rId]-captPrec*ENERGIA.precisao)*1e6*0.14;
-  const poupTotal   = poupAgua+poupEnerg;
+  // Poupança média de referência: 300€/ha/ano (água + energia, valor médio DGADR/EDIA)
+  const poupTotal   = area * 300;
 
   const investBruto = area*CUSTO_HA[rId];
   const investLiq   = investBruto*(1-stB.subsidio/100);
